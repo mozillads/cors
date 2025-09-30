@@ -1,30 +1,5 @@
-/*
-CORS for DuckDB-Wasm, as a Cloudflare Worker
-
-Based on:
-----
-CORS Anywhere as a Cloudflare Worker!
-(c) 2019 by Zibri (www.zibri.org)
-email: zibri AT zibri DOT org
-https://github.com/Zibri/cloudflare-cors-anywhere
-
-This Cloudflare Worker script acts as a CORS proxy that allows
-cross-origin resource sharing for specified origins and URLs.
-It handles OPTIONS preflight requests and modifies response headers accordingly to enable CORS.
-The script also includes functionality to parse custom headers and provide detailed information
-about the CORS proxy service when accessed without specific parameters.
-The script is configurable with whitelist and blacklist patterns, although the blacklist feature is currently unused.
-The main goal is to facilitate cross-origin requests while enforcing specific security and rate-limiting policies.
-----
-
-*/
-
-// Configuration: Whitelist and Blacklist (not used in this version)
-// whitelist = [ "^http.?://shell.duckdb.org$", "duckdb.org$", "test\\..*" ];  // regexp for whitelisted urls
-const blacklistUrls = [];           // regexp for blacklisted urls
-const whitelistOrigins = [ ".*" ];   // regexp for whitelisted origins
-
-// Function to check if a given URI or origin is listed in the whitelist or blacklist
+const blacklistUrls = [];
+const whitelistOrigins = [ ".*" ];
 function isListedInWhitelist(uri, listing) {
     let isListed = false;
     if (typeof uri === "string") {
@@ -34,13 +9,11 @@ function isListedInWhitelist(uri, listing) {
             }
         });
     } else {
-        // When URI is null (e.g., when Origin header is missing), decide based on the implementation
-        isListed = true; // true accepts null origins, false would reject them
+        isListed = true;
     }
     return isListed;
 }
 
-// Event listener for incoming fetch requests
 addEventListener("fetch", async event => {
     event.respondWith((async function() {
         const isPreflightRequest = (event.request.method === "OPTIONS");
@@ -49,8 +22,6 @@ addEventListener("fetch", async event => {
 
 	const url = new URL(originUrl);
 	const pathname = url.pathname;
-
-        // Function to modify headers to enable CORS
         function setupCORSHeaders(headers) {
             headers.set("Access-Control-Allow-Origin", event.request.headers.get("Origin"));
             if (isPreflightRequest) {
@@ -67,8 +38,8 @@ addEventListener("fetch", async event => {
         }
 
 	
-	const CORSPROXY_ENDPOINT = '/corsproxy/'
-	const CORS_PROXY_ENDPOINT = '/cors_proxy/'
+	const CORSPROXY_ENDPOINT = '/cors/'
+	const CORS_PROXY_ENDPOINT = '/u/'
 	const S3TABLES_ENDPOINT = '/s3tables_proxy/'
 	const S3TABLES_ENDPOINT_TEST = '/s3tables_proxy_test/'
 	const origin_to_string = originUrl.toString();
@@ -171,8 +142,6 @@ addEventListener("fetch", async event => {
                 }
 
                 return new Response(
-                    "CLOUDFLARE-CORS-ANYWHERE for DuckDB-Wasm\n\n" +
-                    "Source:\nhttps://github.com/carlopi/cloudflare-cors-proxy\n\n" +
                     "Usage:\n" +
                     originUrl.origin + "/?uri\n\n" +
                     (originHeader !== null ? "Origin: " + originHeader + "\n" : "") +
@@ -189,10 +158,7 @@ addEventListener("fetch", async event => {
             }
         } else {
             return new Response(
-		"This is a Proxy to be used by DuckDB-Wasm</br>\n" + "</br>\n" +
-		"Current valid endpoint are corsproxy/, cors_proxy/ and s3tables_proxy/</br>\n" +
-                "Documentation is at <a href='https://duckdb.org/docs/stable/operations_manual/proxy-for-duckdb-wasm'>https://duckdb.org/docs/stable/operations_manual/proxy-for-duckdb-wasm</a></br>\n" +
-                "Code is at <a href='https://github.com/carlopi/cloudflare-cors-proxy'>https://github.com/carlopi/cloudflare-cors-proxy</a></br>\n",
+		"Forbidden</br>\n",
                 {
                     status: 403,
                     statusText: 'Forbidden',
