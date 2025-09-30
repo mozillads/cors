@@ -27,11 +27,7 @@ addEventListener("fetch", async event => {
             if (isPreflightRequest) {
                 headers.set("Access-Control-Allow-Methods", event.request.headers.get("access-control-request-method"));
                 const requestedHeaders = event.request.headers.get("access-control-request-headers");
-
-                if (requestedHeaders) {
-                    headers.set("Access-Control-Allow-Headers", requestedHeaders);
-                }
-
+                if (requestedHeaders) {headers.set("Access-Control-Allow-Headers", requestedHeaders);}
                 headers.delete("X-Content-Type-Options"); // Remove X-Content-Type-Options header
             }
             return headers;
@@ -158,7 +154,7 @@ addEventListener("fetch", async event => {
             }
         } else {
             return new Response(
-		"Forbidden</br>\n",
+		"Forbidden\n",
                 {
                     status: 403,
                     statusText: 'Forbidden',
